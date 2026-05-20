@@ -107,7 +107,7 @@ class RiskEngine:
         
         return min(score, 100)
     
-    def _get_level(self, score):
+    def get_level(self, score):
         """Convert score to risk level"""
         if score >= 75:
             return 'critical'
@@ -117,3 +117,6 @@ class RiskEngine:
             return 'moderate'
         else:
             return 'low'
+
+    def _get_level(self, score):
+        return self.get_level(score)
