@@ -4,9 +4,6 @@ Main Application Window
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                               QPushButton, QLineEdit, QLabel, QTextEdit, QMessageBox)
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebEngineCore import QWebEnginePage
-import os
 
 from risk_engine import RiskEngine
 from weather_api import WeatherAPI
