@@ -1,4 +1,4 @@
-# GeoShield
+# GeoShield_AI_V2
 
 **Disaster Risk Intelligence Platform** — a professional desktop application for geographic flood, wildfire, and landslide risk analysis.
 
