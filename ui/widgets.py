@@ -1,9 +1,7 @@
 """
-Reusable UI components.
+Reusable premium UI components.
 """
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (
     QFrame,
     QVBoxLayout,
@@ -15,17 +13,22 @@ from PyQt6.QtWidgets import (
 )
 
 import theme
+from config import AUTHOR_CREDIT
 
 
 class RiskCard(QFrame):
-    def __init__(self, title: str, subtitle: str, parent=None):
+    def __init__(self, title: str, subtitle: str, icon: str = "", parent=None):
         super().__init__(parent)
         self.setStyleSheet(theme.card_style())
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 20, 22, 20)
-        layout.setSpacing(12)
+        layout.setSpacing(10)
 
         header = QHBoxLayout()
+        if icon:
+            ic = QLabel(icon)
+            ic.setStyleSheet(f"font-size:18px; color:{theme.ACCENT};")
+            header.addWidget(ic)
         t = QLabel(title)
         t.setStyleSheet("font-weight: 700; font-size: 15px;")
         header.addWidget(t)
@@ -33,7 +36,7 @@ class RiskCard(QFrame):
         self._badge = QLabel("—")
         self._badge.setStyleSheet(
             f"background:{theme.BG_INPUT}; color:{theme.TEXT_MUTED};"
-            f"padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700;"
+            f"padding:5px 11px; border-radius:14px; font-size:10px; font-weight:800;"
         )
         header.addWidget(self._badge)
         layout.addLayout(header)
@@ -43,14 +46,14 @@ class RiskCard(QFrame):
         layout.addWidget(sub)
 
         self._score = QLabel("—")
-        self._score.setStyleSheet(theme.title_style(26))
+        self._score.setStyleSheet(theme.title_style(28))
         layout.addWidget(self._score)
 
         self._bar = QProgressBar()
         self._bar.setRange(0, 100)
         self._bar.setValue(0)
         self._bar.setTextVisible(False)
-        self._bar.setFixedHeight(10)
+        self._bar.setFixedHeight(8)
         layout.addWidget(self._bar)
 
     def set_risk(self, score: float, level: str):
@@ -58,29 +61,28 @@ class RiskCard(QFrame):
         self._score.setText(f"{score:.0f}")
         self._badge.setText(level.upper())
         self._badge.setStyleSheet(
-            f"background:{theme.BG_INPUT}; color:{color};"
-            f"padding:4px 10px; border-radius:12px; font-size:11px; font-weight:700;"
+            f"background:{color}22; color:{color};"
+            f"padding:5px 11px; border-radius:14px; font-size:10px; font-weight:800;"
         )
         self._bar.setValue(int(score))
         self._bar.setStyleSheet(
-            f"QProgressBar::chunk {{ background-color: {color}; border-radius: 5px; }}"
+            f"QProgressBar::chunk {{ background-color: {color}; border-radius: 4px; }}"
         )
 
 
 class StatTile(QFrame):
     def __init__(self, label: str, parent=None):
         super().__init__(parent)
-        self.setStyleSheet(
-            theme.card_style()
-            + "padding: 4px;"
-        )
+        self.setStyleSheet(theme.card_style())
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 14, 16, 14)
-        lbl = QLabel(label)
-        lbl.setStyleSheet(theme.muted_style() + "font-weight: 600;")
+        lbl = QLabel(label.upper())
+        lbl.setStyleSheet(
+            theme.muted_style() + "font-weight:700; letter-spacing:0.5px; font-size:10px;"
+        )
         layout.addWidget(lbl)
         self._value = QLabel("—")
-        self._value.setStyleSheet("font-weight: 700; font-size: 15px;")
+        self._value.setStyleSheet("font-weight: 700; font-size: 16px;")
         layout.addWidget(self._value)
 
     def set_value(self, text: str):
@@ -93,70 +95,11 @@ class NavButton(QPushButton):
         super().__init__(label, parent)
         self.setProperty("class", "nav")
         self.setCursor(Qt.CursorShape.PointingHandCursor)
-        self._active = False
 
     def set_active(self, active: bool):
-        self._active = active
         self.setProperty("class", "nav-active" if active else "nav")
         self.style().unpolish(self)
         self.style().polish(self)
-
-
-class MapWidget(QLabel):
-    """Loads a static OpenStreetMap preview for coordinates."""
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setMinimumHeight(240)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.setStyleSheet(
-            theme.card_style()
-            + f"background-color: {theme.BG_INPUT}; color: {theme.TEXT_MUTED};"
-        )
-        self.setText("Map preview will appear after analysis")
-        self._nam = QNetworkAccessManager(self)
-        self._nam.finished.connect(self._on_loaded)
-        self._reply = None
-
-    def load_coordinates(self, lat: float, lon: float):
-        self.setText("Loading map…")
-        zoom = 9
-        url = (
-            "https://staticmap.openstreetmap.de/staticmap.php"
-            f"?center={lat},{lon}&zoom={zoom}&size=640x360"
-            f"&markers={lat},{lon},lightblue1"
-        )
-        if self._reply:
-            self._reply.abort()
-        request = QNetworkRequest(QUrl(url))
-        request.setRawHeader(b"User-Agent", b"GeoShield/1.0")
-        self._reply = self._nam.get(request)
-
-    def _on_loaded(self, reply: QNetworkReply):
-        if reply.error() == QNetworkReply.NetworkError.NoError:
-            data = reply.readAll()
-            pix = QPixmap()
-            if pix.loadFromData(data):
-                scaled = pix.scaled(
-                    self.size(),
-                    Qt.AspectRatioMode.KeepAspectRatioByExpanding,
-                    Qt.TransformationMode.SmoothTransformation,
-                )
-                self.setPixmap(scaled)
-                self.setText("")
-            else:
-                self._show_fallback(reply)
-        else:
-            self._show_fallback(reply)
-        reply.deleteLater()
-
-    def _show_fallback(self, reply):
-        self.setPixmap(QPixmap())
-        self.setText("Map unavailable — coordinates saved for this region")
-
-    def clear_map(self):
-        self.setPixmap(QPixmap())
-        self.setText("Run an analysis to view the region map")
 
 
 class SectionTitle(QWidget):
@@ -166,9 +109,49 @@ class SectionTitle(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
         t = QLabel(title)
-        t.setStyleSheet(theme.title_style(20))
+        t.setStyleSheet(theme.title_style(22))
         layout.addWidget(t)
         if subtitle:
             s = QLabel(subtitle)
             s.setStyleSheet(theme.subtitle_style())
+            s.setWordWrap(True)
             layout.addWidget(s)
+
+
+class MetricPill(QLabel):
+    def __init__(self, text: str, color: str = None, parent=None):
+        super().__init__(text, parent)
+        c = color or theme.ACCENT
+        self.setStyleSheet(theme.status_chip_style(c))
+
+
+class FeatureRow(QWidget):
+    def __init__(self, icon: str, title: str, detail: str, parent=None):
+        super().__init__(parent)
+        row = QHBoxLayout(self)
+        row.setContentsMargins(0, 6, 0, 6)
+        ic = QLabel(icon)
+        ic.setFixedWidth(28)
+        ic.setStyleSheet(f"color:{theme.ACCENT}; font-size:16px;")
+        row.addWidget(ic)
+        col = QVBoxLayout()
+        col.setSpacing(2)
+        t = QLabel(title)
+        t.setStyleSheet("font-weight:600; font-size:13px;")
+        col.addWidget(t)
+        d = QLabel(detail)
+        d.setStyleSheet(theme.muted_style())
+        d.setWordWrap(True)
+        col.addWidget(d)
+        row.addLayout(col, stretch=1)
+
+
+class AuthorFooter(QLabel):
+    """Persistent creator attribution."""
+
+    def __init__(self, parent=None):
+        super().__init__(AUTHOR_CREDIT, parent)
+        self.setStyleSheet(
+            theme.muted_style() + f" color: {theme.TEXT_MUTED}; font-size: 11px;"
+        )
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
