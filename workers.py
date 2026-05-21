@@ -4,6 +4,7 @@ from PyQt6.QtCore import QThread, pyqtSignal
 from database import Database
 from risk_engine import RiskEngine
 from weather_api import WeatherAPI
+from science_engine import ScienceEngine
 
 
 class AnalysisWorker(QThread):
@@ -16,11 +17,12 @@ class AnalysisWorker(QThread):
         self.user_id = user_id
         self._weather = WeatherAPI()
         self._risk = RiskEngine()
+        self._science = ScienceEngine()
         self._db = Database()
 
     def run(self):
         try:
-            weather = self._weather.get_weather(self.city)
+            weather = self._weather.get_comprehensive(self.city)
             if not weather:
                 self.failed.emit(
                     f'Could not retrieve weather data for "{self.city}". '
@@ -36,25 +38,19 @@ class AnalysisWorker(QThread):
             )
             recommendations = self._risk.get_recommendations(risks)
             historical = self._db.get_disasters_for_city(self.city)
-            historical_count = len(historical)
+            science = self._science.build_assessment(weather, risks, historical)
 
             if self.user_id:
-                self._db.save_analysis(
-                    self.user_id,
-                    self.city,
-                    weather,
-                    risks,
-                )
+                self._db.save_analysis(self.user_id, self.city, weather, risks)
 
-            self.finished.emit(
-                {
-                    "city": self.city,
-                    "weather": weather,
-                    "risks": risks,
-                    "recommendations": recommendations,
-                    "historical": historical,
-                    "historical_count": historical_count,
-                }
-            )
+            self.finished.emit({
+                "city": self.city,
+                "weather": weather,
+                "risks": risks,
+                "recommendations": recommendations,
+                "historical": historical,
+                "historical_count": len(historical),
+                "science": science,
+            })
         except Exception as e:
             self.failed.emit(str(e))

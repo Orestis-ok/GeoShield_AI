@@ -2,15 +2,16 @@
 Local user authentication (SQLite).
 """
 import hashlib
-import os
 import secrets
 import sqlite3
 
+from config import DB_PATH, ensure_sqlite_database
+
 
 class AuthManager:
-    def __init__(self, db_path: str = "data/geoshield.db"):
+    def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
-        os.makedirs("data", exist_ok=True)
+        ensure_sqlite_database(self.db_path)
         self._init_users_table()
 
     def _init_users_table(self):
@@ -79,3 +80,30 @@ class AuthManager:
             return False, None, "Invalid email or password."
 
         return True, {"id": user_id, "email": user_email, "full_name": full_name}, ""
+
+    def get_user_by_id(self, user_id: int) -> dict | None:
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, email, full_name FROM users WHERE id = ?",
+            (user_id,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return None
+        return {"id": row[0], "email": row[1], "full_name": row[2]}
+
+    def get_user_by_email(self, email: str) -> dict | None:
+        email = email.strip().lower()
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, email, full_name FROM users WHERE email = ?",
+            (email,),
+        )
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return None
+        return {"id": row[0], "email": row[1], "full_name": row[2]}

@@ -1,6 +1,6 @@
-# GeoShield_AI_V2
+# GeoShield Pro
 
-**Disaster Risk Intelligence Platform** — a professional desktop application for geographic flood, wildfire, and landslide risk analysis.
+**Enterprise Disaster Risk Intelligence** — a professional desktop application for geographic flood, wildfire, and landslide risk analysis. Designed for a premium ($20/mo) analyst workflow.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
@@ -8,14 +8,16 @@
 
 ## Features
 
-- **Secure workspace** — local accounts with sign up / sign in and optional “remember me”
-- **Live weather** — Open-Meteo geocoding and forecast (temperature, humidity, wind, precipitation)
-- **Risk engine** — composite scoring for flood, wildfire, and landslide hazards
-- **Historical archive** — curated disaster records by region
-- **Analysis history** — per-user saved runs with timestamps
+- **Premium auth** — branded split-screen login/signup with remember-me
+- **Live weather** — Open-Meteo geocoding (lat/lon, humidity, wind, precipitation)
+- **Risk engine** — composite scoring + operational recommendations per hazard
+- **Interactive maps** — Leaflet pan/zoom (PyQt6-WebEngine) with analysis & disaster markers
+- **History & archives** — per-user analysis log + regional disaster database
+- **Science Lab** — 48h instruments, model decomposition, 24h/72h/7d projections, Chart.js series, CSV/JSON exports
+- **Settings** — units, default location, map style, privacy controls, subscription panel
+- **Attribution** — By Orestis Kerkines (splash, auth, footer, reports, methodology)
 - **HTML reports** — export branded intelligence reports for stakeholders
-- **Map preview** — static OpenStreetMap view for analyzed coordinates
-- **Background processing** — non-blocking API calls via worker threads
+- **Background processing** — non-blocking analysis via worker threads
 
 ## Screenshots
 
@@ -43,6 +45,8 @@ pip install -r requirements.txt
 python main.py
 ```
 
+> **Interactive maps** require `PyQt6-WebEngine`. Without it, the app falls back to a static map preview.
+
 ## Project structure
 
 ```
@@ -60,17 +64,27 @@ geoshield-desktop/
 └── ui/
     ├── app_window.py    # Screen navigation
     ├── shell_page.py    # Main workspace shell
-    └── views/           # Analysis, history, settings
+    └── views/           # Analysis, science lab, history, settings
 ```
 
 ## Building an executable (Windows)
 
-```bash
-pip install pyinstaller
-pyinstaller --onefile --windowed --name GeoShield main.py
+From the project folder:
+
+```powershell
+.\build_exe.ps1
 ```
 
-The binary will be in `dist/GeoShield.exe`.
+Or manually:
+
+```bash
+pip install -r requirements.txt
+pyinstaller --noconfirm geoshield.spec
+```
+
+The app will be at `dist/GeoShield.exe`. Double-click to run (no terminal). User data is stored in a `data` folder **next to the executable**.
+
+If you see `file is not a database` when running from source, delete `data/geoshield.db` and restart — the app will recreate it (or upgrade to a version that auto-repairs corrupt files).
 
 ## Data & privacy
 
