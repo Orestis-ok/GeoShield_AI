@@ -10,14 +10,91 @@ class RiskEngine:
         fire_score = self._calculate_fire(temperature, humidity, wind_speed)
         landslide_score = self._calculate_landslide(precipitation, wind_speed, humidity)
         
-        overall = (flood_score * 0.35 + fire_score * 0.35 + landslide_score * 0.30)
-        
+        overall = flood_score * 0.35 + fire_score * 0.35 + landslide_score * 0.30
+
         return {
-            'flood': {'score': flood_score, 'level': self._get_level(flood_score)},
-            'fire': {'score': fire_score, 'level': self._get_level(fire_score)},
-            'landslide': {'score': landslide_score, 'level': self._get_level(landslide_score)},
-            'overall': overall
+            "flood": {"score": flood_score, "level": self._get_level(flood_score)},
+            "fire": {"score": fire_score, "level": self._get_level(fire_score)},
+            "landslide": {
+                "score": landslide_score,
+                "level": self._get_level(landslide_score),
+            },
+            "overall": overall,
+            "overall_level": self._get_level(overall),
         }
+
+    def get_recommendations(self, risks: dict) -> dict[str, str]:
+        """Operational guidance keyed by hazard."""
+        recs = {}
+        flood = risks["flood"]
+        fire = risks["fire"]
+        slide = risks["landslide"]
+        overall = risks.get("overall_level", self.get_level(risks["overall"]))
+
+        if flood["level"] in ("high", "critical"):
+            recs["flood"] = (
+                "Activate flood monitoring: review drainage, pre-position pumps, "
+                "and brief field teams on evacuation routes for low-lying assets."
+            )
+        elif flood["level"] == "moderate":
+            recs["flood"] = (
+                "Increase precipitation surveillance; inspect retention basins "
+                "and confirm emergency contacts for watershed stakeholders."
+            )
+        else:
+            recs["flood"] = (
+                "Flood indicators within normal bounds; maintain seasonal "
+                "readiness checks and hydrology dashboard reviews."
+            )
+
+        if fire["level"] in ("high", "critical"):
+            recs["fire"] = (
+                "Elevate wildfire posture: restrict hot work, stage fire "
+                "suppression resources, and monitor wind shifts hourly."
+            )
+        elif fire["level"] == "moderate":
+            recs["fire"] = (
+                "Dryness and wind support elevated ignition risk; audit "
+                "vegetation clearance and verify mutual-aid agreements."
+            )
+        else:
+            recs["fire"] = (
+                "Wildfire potential subdued; continue standard fuel-management "
+                "and public communication protocols."
+            )
+
+        if slide["level"] in ("high", "critical"):
+            recs["landslide"] = (
+                "Slope instability likely: geotechnical inspection recommended "
+                "for cut slopes, retaining walls, and transport corridors."
+            )
+        elif slide["level"] == "moderate":
+            recs["landslide"] = (
+                "Rainfall stress on slopes warrants increased patrols and "
+                "temporary restrictions on heavy equipment near embankments."
+            )
+        else:
+            recs["landslide"] = (
+                "Landslide indicators stable; document baseline conditions "
+                "for seasonal comparison."
+            )
+
+        if overall in ("high", "critical"):
+            recs["overall"] = (
+                "Composite risk is ELEVATED — convene operations briefing, "
+                "validate continuity plans, and enable stakeholder alert channel."
+            )
+        elif overall == "moderate":
+            recs["overall"] = (
+                "Regional conditions warrant heightened awareness; schedule "
+                "a 24-hour reassessment cycle until scores normalize."
+            )
+        else:
+            recs["overall"] = (
+                "Portfolio risk within acceptable planning thresholds; "
+                "continue routine monitoring cadence."
+            )
+        return recs
     
     def _calculate_flood(self, temp, humidity, precip):
         """Calculate flood risk"""
