@@ -1,4 +1,4 @@
-# GeoShield Pro
+# GeoShield AI
 
 **Enterprise Disaster Risk Intelligence** — a professional desktop application for geographic flood, wildfire, and landslide risk analysis. Designed for a premium ($20/mo) analyst workflow.
 
