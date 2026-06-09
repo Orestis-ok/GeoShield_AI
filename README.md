@@ -108,9 +108,7 @@ High:     60-74
 Critical: >= 75
 The model is intended for decision support and planning, not certified emergency forecasting.
 
-## Project structure
-
-```
+Project structure
 GeoShield_AI/
 ├── main.py                  # Application entry point
 ├── config.py                # App metadata, paths, constants, model version
