@@ -6,6 +6,10 @@
 ![PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
+# NOTICE
+
+This branch is only for **TESTING**!
+
 ## Features
 
 - **Premium auth** — branded split-screen login/signup with remember-me
