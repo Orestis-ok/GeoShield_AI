@@ -1,195 +1,101 @@
-# GeoShield AI
+# GeoShield Pro
+
+**Enterprise Disaster Risk Intelligence** — a professional desktop application for geographic flood, wildfire, and landslide risk analysis. Designed for a premium ($20/mo) analyst workflow.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PyQt6](https://img.shields.io/badge/UI-PyQt6-green)
 ![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-GeoShield AI / GeoShield Pro is a Python desktop application for live disaster-risk intelligence. It combines Open-Meteo weather and geocoding data with a local tri-hazard model to estimate flood, wildfire, landslide, and composite regional risk.
-
-The current version is a PyQt6 desktop app with authentication, saved analysis history, an interactive map, science-oriented diagnostics, and export tools for reports and research data.
-
 ## Features
 
-- Live location lookup through Open-Meteo geocoding
-- Real-time weather ingestion with current, hourly, and 7-day forecast fields
-- Tri-hazard risk model for:
-  - Flood risk
-  - Wildfire risk
-  - Landslide risk
-  - Composite risk index
-- Operational recommendations based on current hazard levels
-- Local user signup/login with SQLite-backed accounts
-- Per-user analysis history
-- Seeded regional disaster archive for comparison
-- Interactive map view using PyQt6 WebEngine
-- Science Lab with:
-  - Meteorological instrument panel
-  - Model factor decomposition
-  - 24-hour, 72-hour, and 7-day projections
-  - Diagnostics and uncertainty bands
-  - Variable correlations
-  - Methodology text
-- HTML report export for stakeholder-ready summaries
-- JSON and CSV exports for scientific/research workflows
-- Preferences for default location, map style, remembered sessions, and report behavior
-- Windows executable build support through PyInstaller
+- **Premium auth** — branded split-screen login/signup with remember-me
+- **Live weather** — Open-Meteo geocoding (lat/lon, humidity, wind, precipitation)
+- **Risk engine** — composite scoring + operational recommendations per hazard
+- **Interactive maps** — Leaflet pan/zoom (PyQt6-WebEngine) with analysis & disaster markers
+- **History & archives** — per-user analysis log + regional disaster database
+- **Science Lab** — 48h instruments, model decomposition, 24h/72h/7d projections, Chart.js series, CSV/JSON exports
+- **Settings** — units, default location, map style, privacy controls, subscription panel
+- **Attribution** — By Orestis Kerkines (splash, auth, footer, reports, methodology)
+- **HTML reports** — export branded intelligence reports for stakeholders
+- **Background processing** — non-blocking analysis via worker threads
 
-## Tech Stack
+## Screenshots
 
-- Python 3.10+
-- PyQt6
-- PyQt6-WebEngine
-- SQLite
-- requests
-- Open-Meteo Forecast API
-- Open-Meteo Geocoding API
-- PyInstaller
+Run the app locally to explore the loading screen, auth flow, analysis dashboard, history tables, and settings panel.
 
 ## Requirements
 
-- Python 3.10 or newer
-- Internet connection for live weather and geocoding data
-- A desktop OS capable of running PyQt6
+- Python 3.10+
+- Windows, macOS, or Linux
+- Internet connection (weather API)
 
-Install dependencies from:
+## Installation
+
+```bash
+git clone https://github.com/YOUR_USERNAME/geoshield-desktop.git
+cd geoshield-desktop
+
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+python main.py
+```
+
+> **Interactive maps** require `PyQt6-WebEngine`. Without it, the app falls back to a static map preview.
+
+## Project structure
+
+```
+geoshield-desktop/
+├── main.py              # Application entry point
+├── config.py            # Version and constants
+├── theme.py             # Design system / styles
+├── auth.py              # Local authentication
+├── session.py           # Remember-me persistence
+├── database.py          # SQLite disasters + history
+├── weather_api.py       # Open-Meteo integration
+├── risk_engine.py       # Risk scoring + recommendations
+├── workers.py           # Background analysis thread
+├── report_export.py     # HTML report generator
+└── ui/
+    ├── app_window.py    # Screen navigation
+    ├── shell_page.py    # Main workspace shell
+    └── views/           # Analysis, science lab, history, settings
+```
+
+## Building an executable (Windows)
+
+From the project folder:
+
+```powershell
+.\build_exe.ps1
+```
+
+Or manually:
 
 ```bash
 pip install -r requirements.txt
-Current dependencies:
+pyinstaller --noconfirm geoshield.spec
+```
 
-PyQt6>=6.6.1
-PyQt6-WebEngine>=6.6.0
-requests>=2.31.0
-pyinstaller>=6.10.0
-Installation
-Clone the repository:
+The app will be at `dist/GeoShield.exe`. Double-click to run (no terminal). User data is stored in a `data` folder **next to the executable**.
 
-git clone https://github.com/Orestis-ok/GeoShield_AI.git
-cd GeoShield_AI
-Create and activate a virtual environment:
+If you see `file is not a database` when running from source, delete `data/geoshield.db` and restart — the app will recreate it (or upgrade to a version that auto-repairs corrupt files).
 
-python -m venv venv
-On Windows:
+## Data & privacy
 
-venv\Scripts\activate
-On macOS/Linux:
+- User accounts and analysis history are stored **locally** in `data/geoshield.db`
+- Exported reports are saved to `data/reports/`
+- Weather data is fetched from [Open-Meteo](https://open-meteo.com/) (no API key required)
 
-source venv/bin/activate
-Install dependencies:
+## Disclaimer
 
-pip install -r requirements.txt
-Run the app:
+GeoShield provides informational risk estimates for planning purposes. It is **not** a substitute for official government alerts, emergency services, or licensed professional assessment.
 
-python main.py
-How It Works
-The user enters a city, region, or location.
-GeoShield geocodes the location through Open-Meteo.
-The app fetches current weather, hourly instrument data, and 7-day forecast data.
-The risk engine calculates flood, wildfire, landslide, and composite scores.
-The science engine builds model diagnostics, forecast projections, correlations, and uncertainty ranges.
-Results are shown in the desktop interface and can be saved/exported.
-Risk Model
-GeoShield uses an empirical composite model named:
+## License
 
-GS-RM-2.1 — Tri-Hazard Composite Engine
-Hazard weights:
-
-Flood:     0.35
-Wildfire:  0.35
-Landslide: 0.30
-Composite formula:
-
-Ψ = 0.35 * S_flood + 0.35 * S_fire + 0.30 * S_landslide
-Risk levels:
-
-Low:      < 40
-Moderate: 40-59
-High:     60-74
-Critical: >= 75
-The model is intended for decision support and planning, not certified emergency forecasting.
-
-Project structure
-GeoShield_AI/
-├── main.py                  # Application entry point
-├── config.py                # App metadata, paths, constants, model version
-├── theme.py                 # Global styling and design helpers
-├── auth.py                  # Local authentication
-├── session.py               # Remember-me session persistence
-├── database.py              # SQLite users, disasters, and analysis history
-├── weather_api.py           # Open-Meteo geocoding and weather integration
-├── risk_engine.py           # Hazard scoring and recommendations
-├── science_engine.py        # Model diagnostics, projections, methodology
-├── workers.py               # Background analysis worker thread
-├── report_export.py         # HTML report export
-├── data_export.py           # JSON/CSV science exports
-├── build_exe.ps1            # Windows executable build script
-├── geoshield.spec           # PyInstaller configuration
-├── requirements.txt
-├── assets/
-│   └── icon.ico
-├── data/
-│   ├── geoshield.db
-│   ├── session.json
-│   ├── prefrences.json
-│   ├── reports/
-│   └── science_reports/
-└── ui/
-    ├── app_window.py
-    ├── auth_layout.py
-    ├── dashboard_page.py
-    ├── loading_screen.py
-    ├── login_page.py
-    ├── signup_page.py
-    ├── shell_page.py
-    ├── map_widget.py
-    ├── science_charts.py
-    ├── widgets.py
-    └── views/
-        ├── analysis_view.py
-        ├── science_view.py
-        ├── history_view.py
-        └── settings_view.py
-Data Storage
-GeoShield stores user data locally.
-
-data/geoshield.db        Local SQLite database
-data/session.json        Remembered session state
-data/prefrences.json     User preferences
-data/reports/            Exported HTML reports
-data/science_exports/    Generated JSON/CSV science exports
-The database is created automatically if missing or repaired if the existing file is invalid.
-
-Exports
-GeoShield can export:
-
-HTML intelligence reports
-Full scientific JSON packages
-Hourly weather CSV files
-7-day forecast CSV files
-HTML reports are saved to:
-
-data/reports/
-Science exports are saved to:
-
-data/science_exports/
-Building a Windows Executable
-Run:
-
-.\build_exe.ps1
-The script installs dependencies and builds the app using PyInstaller.
-
-Output:
-
-dist/GeoShield.exe
-When running as an executable, GeoShield creates and uses a data folder next to the executable for accounts, sessions, preferences, history, and exports.
-
-Notes
-The app requires internet access to fetch live Open-Meteo weather data.
-If weather data cannot be retrieved, check the location name and network connection.
-PyQt6-WebEngine is required for the interactive map.
-The repository currently uses the app name GeoShield Pro internally.
-Disclaimer
-GeoShield AI is a decision-support and educational risk-intelligence tool. It is not a replacement for official emergency alerts, civil protection authorities, certified hydrometeorological forecasts, or professional engineering/geotechnical assessment.
-
-For life-safety decisions, always follow official local and national emergency guidance.
-
+MIT — see repository license file.
