@@ -1,6 +1,6 @@
 # NOTICE
 
-This branch is only for **TESTING**!
+This branch is only for **TESTING**! Do not **merge it** with the master branch
 
 # GeoShield Pro
 
